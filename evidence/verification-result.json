@@ -1,0 +1,60 @@
+{
+  "schema_version": "portfolio-demo-v1",
+  "synthetic": true,
+  "verification": {
+    "target": "example/checkout-service",
+    "change_scope": "synthetic checkout null-guard proposal",
+    "aggregate_rule": "FAIL > PARTIAL > PASS",
+    "verdict": "PASS"
+  },
+  "checks": [
+    {
+      "check_id": "health-http",
+      "type": "http",
+      "result": "PASS",
+      "request": {
+        "method": "GET",
+        "url": "https://api.example.test/health"
+      },
+      "observed": {
+        "status": 200,
+        "duration_ms": 84
+      },
+      "provenance": {
+        "source": "configured-health-check"
+      }
+    },
+    {
+      "check_id": "checkout-regression",
+      "type": "command",
+      "result": "PASS",
+      "command": "pytest tests/checkout/test_currency.py",
+      "observed": {
+        "exit_code": 0,
+        "summary": "18 synthetic fixture tests passed"
+      },
+      "provenance": {
+        "source": "diff-analyzer",
+        "rationale": "Focused regression check selected for the changed checkout path."
+      }
+    },
+    {
+      "check_id": "checkout-smoke",
+      "type": "browser",
+      "result": "PASS",
+      "observed": {
+        "assertions": 3,
+        "snapshot_count": 4,
+        "summary": "Synthetic checkout smoke flow rendered and completed."
+      },
+      "provenance": {
+        "source": "domain-playbook"
+      }
+    }
+  ],
+  "approval": {
+    "required": true,
+    "state": "AWAITING_HUMAN",
+    "mutation_executed": false
+  }
+}
