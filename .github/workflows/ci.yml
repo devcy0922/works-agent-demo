@@ -1,0 +1,86 @@
+name: public-demo-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JavaScript syntax
+        run: node --check app.js
+
+      - name: Validate local document references
+        run: |
+          python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          root = Path('.')
+          broken = []
+          markdown_link = re.compile(r'\]\(([^)]+)\)')
+          html_ref = re.compile(r'(?:href|src)=["\']([^"\']+)["\']')
+
+          def check(source: Path, target: str):
+              target = target.split('#', 1)[0].strip()
+              if not target or target.startswith(('http://', 'https://', 'mailto:', '#')):
+                  return
+              candidate = (source.parent / target).resolve()
+              if not candidate.exists():
+                  broken.append(f'{source}: {target}')
+
+          for path in root.rglob('*.md'):
+              text = path.read_text(encoding='utf-8')
+              for target in markdown_link.findall(text):
+                  check(path, target)
+
+          for path in root.rglob('*.html'):
+              text = path.read_text(encoding='utf-8')
+              for target in html_ref.findall(text):
+                  check(path, target)
+
+          if broken:
+              print('Broken local references:')
+              print('\n'.join(f'- {item}' for item in broken))
+              sys.exit(1)
+          print('Local references OK')
+          PY
+
+      - name: Check public sanitization boundary
+        run: |
+          python3 - <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          excluded = {'.git'}
+          patterns = {
+              'private IPv4': re.compile(r'(?<!\d)(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(?!\d)'),
+              'email address': re.compile(r'\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b', re.I),
+          }
+
+          findings = []
+          for path in Path('.').rglob('*'):
+              if not path.is_file() or any(part in excluded for part in path.parts):
+                  continue
+              if path.suffix.lower() not in {'.md', '.json', '.html', '.css', '.js', '.yml', '.yaml'}:
+                  continue
+              text = path.read_text(encoding='utf-8', errors='ignore')
+              for label, pattern in patterns.items():
+                  for match in pattern.finditer(text):
+                      findings.append(f'{path}: {label}: {match.group(0)}')
+
+          if findings:
+              print('Potential public-data leak detected:')
+              print('\n'.join(f'- {item}' for item in findings))
+              sys.exit(1)
+          print('Sanitization checks OK')
+          PY
