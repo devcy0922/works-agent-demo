@@ -40,13 +40,13 @@ The same responsibility should not be duplicated across these layers.
 
 ## Evidence envelope
 
-Every meaningful finding should be traceable to the evidence used to produce it. The public demo reduces this to three fictional sources:
+Every meaningful finding should be traceable to the evidence used to produce it. This demo reduces the idea to three fictional sources:
 
 - `app-logs-demo`
 - `orders-readonly`
 - `example/checkout-service`
 
-Production source identifiers are intentionally not included in this repository.
+Production source identifiers are intentionally replaced with demo identifiers.
 
 ## Failure behavior
 

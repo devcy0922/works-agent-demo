@@ -1,6 +1,6 @@
 # Public Sanitization Policy
 
-This repository is a public portfolio for private operational software. Public material must be useful enough to explain the architecture without exposing company, customer or personal information.
+This repository is a demo built from private operational software. Demo material should explain the architecture without exposing company, customer or personal information.
 
 ## Never publish
 
@@ -29,7 +29,7 @@ Measurements in sample evidence are synthetic unless a document explicitly says 
 
 ## Publication checklist
 
-Before adding or updating public evidence:
+Before adding or updating demo material:
 
 1. Replace real hosts and URLs with `example.test` values.
 2. Replace real repositories and ticket numbers with fictional identifiers.
@@ -39,8 +39,8 @@ Before adding or updating public evidence:
 6. Label synthetic artifacts with `"synthetic": true` or an equivalent visible note.
 7. Do not publish measured performance or reliability claims without reproducible evidence.
 
-## Public demo boundary
+## Demo boundary
 
-`index.html` and `app.js` contain a deterministic client-side simulation. They do not call private APIs, connect to real systems or execute external mutations.
+`index.html` and `app.js` contain a deterministic client-side simulation. The Python example executes only local synthetic commands. Neither path calls private APIs, connects to real systems or executes external mutations.
 
-The demo may display realistic workflow states, but it must not imply that the public repository contains the production agent, verification engine or backend.
+The demo may display realistic workflow states, but it must not imply that this repository contains the production agent, verification engine or backend.

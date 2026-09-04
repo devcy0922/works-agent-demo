@@ -1,6 +1,6 @@
 # Demo Contract
 
-The public demo is intentionally small and deterministic.
+The demo is intentionally small and deterministic.
 
 ## What it demonstrates
 

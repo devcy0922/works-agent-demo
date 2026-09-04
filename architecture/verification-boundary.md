@@ -53,7 +53,7 @@ Representative evidence shape:
 }
 ```
 
-The JSON above is synthetic and documents the public contract, not a production record.
+The JSON above is synthetic and documents the demo contract, not a production record.
 
 ## Verdict precedence
 

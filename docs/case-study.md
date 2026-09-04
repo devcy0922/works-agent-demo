@@ -1,4 +1,4 @@
-# Case Study — From Operational Event to Verified Proposal
+# Demo Walkthrough — From Operational Event to Verified Proposal
 
 ## Problem
 
@@ -8,7 +8,7 @@ A generic chat assistant can help with individual steps, but it usually does not
 
 ## System goal
 
-The private system behind this portfolio was designed around one question:
+The systems behind this demo were designed around one question:
 
 > How can AI reduce the investigation and coordination cost without turning model confidence into execution authority?
 
@@ -44,7 +44,7 @@ The two systems are intentionally separate. Verification is not absorbed into th
 
 ## Representative synthetic scenario
 
-The public demo uses a fictional checkout incident.
+The demo uses a fictional checkout incident.
 
 ```text
 Alert webhook
@@ -113,23 +113,23 @@ The system distinguishes failures by ownership.
 | product regression is reproduced | `FAIL` |
 | verification is complete and passing | expose human approval |
 
-## Why this is not a public source mirror
+## Why this is a demo
 
 The production implementations contain operational connectors, environment profiles and company-specific integration details that should not be published. A stripped source dump would either leak information or remove so much context that it would no longer demonstrate the system meaningfully.
 
-This repository instead publishes:
+This demo contains:
 
 - the architecture contracts
 - the system boundaries
 - engineering decisions
 - synthetic evidence shapes
-- a deterministic interactive demo
-- the sanitization policy used for public material
+- a deterministic interactive walkthrough
+- the sanitization policy used for demo material
 
-That makes the portfolio claim narrower but more verifiable: it shows **how the system is designed and what evidence it is supposed to produce**, without presenting private implementation as public OSS.
+The goal is to make the flow easy to understand and run locally, without presenting private implementation as public OSS.
 
-## Limits of this public demo
+## Limits of this demo
 
-The browser demo is not connected to a production backend. It does not prove production reliability, latency or scale. It proves only the public state-machine contract represented in the UI.
+The browser demo is not connected to a production backend. It does not represent production reliability, latency or scale. It shows only the state transitions represented in the UI.
 
 No performance numbers or automated-test counts are claimed in this repository unless separately published with reproducible evidence.

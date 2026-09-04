@@ -114,9 +114,9 @@ flowchart TD
     P4 --> H1
 ```
 
-## Public/private split
+## Demo boundary
 
-This repository publishes contracts, diagrams, synthetic examples and an interactive deterministic demo. The following remain private:
+This demo includes contracts, diagrams, synthetic examples and an interactive deterministic walkthrough. The following remain outside the demo:
 
 - production source and prompts
 - deployment topology

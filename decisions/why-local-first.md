@@ -30,6 +30,6 @@ A hybrid deployment can still use a cloud model for selected tasks while keeping
 
 inside the controlled application environment.
 
-## Public portfolio note
+## Demo note
 
-This repository contains no real hosts, usernames, credentials, ticket identifiers or internal repository names. See [`../SANITIZATION.md`](../SANITIZATION.md).
+This demo contains no real hosts, usernames, credentials, ticket identifiers or internal repository names. See [`../SANITIZATION.md`](../SANITIZATION.md).

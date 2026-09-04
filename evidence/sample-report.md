@@ -1,6 +1,6 @@
 # Synthetic Incident Report
 
-> Portfolio example only. All identifiers, observations and measurements below are fictional.
+> Demo example only. All identifiers, observations and measurements below are fictional.
 
 ## Case
 
@@ -47,4 +47,4 @@ The verdict is based on runner observations, not an LLM confidence score.
 
 `AWAITING_HUMAN`
 
-The public demo stops at approval. It never writes to a repository, database, ticket system or production service.
+The demo stops at approval. It never writes to a repository, database, ticket system or production service.
