@@ -1,37 +1,49 @@
-# Works Agent System — Demo
+# Works Agent System — Executable Demo
 
 [![CI](https://github.com/devcy0922/works-agent-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/devcy0922/works-agent-demo/actions/workflows/ci.yml)
 [![Demo](https://img.shields.io/badge/demo-static%20%2B%20executable-6d5dfc)](https://devcy0922.github.io/works-agent-demo/)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 
-> An interactive demo of an evidence-based agent workflow.
+> Works Agent Runtime과 PinchQ Verification Engine의 핵심 신뢰 경계를 작은 실행 가능한 데모로 재현합니다.
 
-> AI가 결정을 대신하는 시스템이 아니라, **AI가 조사하고 제안하며 실행 결과를 검증 가능한 Evidence로 만든 뒤 사람이 최종 결정하는 업무 자동화 시스템**입니다.
+이 저장소는 포트폴리오용 제품 복제본이 아니라, **AI가 조사하고 제안하되 실행 결과와 최종 승인은 분리하는 업무 자동화 흐름**을 직접 확인하는 public-safe reference implementation입니다.
 
-이 저장소는 두 개의 private implementation에서 가져온 구조를 하나의 데모 흐름으로 묶어 보여줍니다.
+실제 제품 소스·프롬프트·커넥터·운영 데이터는 포함하지 않습니다. 화면과 실행 예제는 synthetic/anonymized data만 사용합니다.
 
-- **Works Agent Runtime** — 업무 인입, 조사, 분석, 제안, 승인 수명주기
-- **PinchQ Verification Engine** — 변경 분석, 검증 계획, 실제 실행 Evidence, `PASS / FAIL / PARTIAL`
+## 먼저 보는 데모 흐름
 
-실제 제품 소스, 프롬프트, 배포 구성, 사내 connector, 운영 데이터는 포함하지 않습니다. 화면과 실행 예제의 데이터는 모두 **synthetic / anonymized data**입니다.
+```mermaid
+flowchart LR
+    E[Work event] --> C[Collect\nsynthetic context]
+    C --> I[Investigate\nread-only]
+    I --> P[Proposal\nno mutation]
+    P --> V[Verify]
+    V --> G[Policy gate]
+    G --> R[CommandRunner\nreal subprocess]
+    R --> EV[Evidence\nexit code/output]
+    EV --> D{Aggregate verdict}
+    D -->|PASS| A[ApprovalGate\napprove]
+    D -->|PARTIAL| H[Human review\nmissing evidence]
+    D -->|FAIL| X[Reject / rework]
+```
 
-## Demo purpose
+핵심은 `Proposal`이 실행 권한이 아니라는 점입니다. `PASS`는 모델의 판단이나 화면 상태가 아니라, 허용된 runner가 남긴 실행 Evidence에서만 만들어집니다.
 
-이 데모는 agent 시스템이 어떤 순서로 움직이고 어디에서 멈추는지 빠르게 보여주기 위한 것입니다. 작은 실행 코드와 테스트로 다음 규칙을 확인할 수 있습니다.
+## 실행해 보기
 
-- 실행 Evidence가 없으면 `PASS`가 될 수 없습니다.
-- `FAIL > PARTIAL > PASS` 우선순위로 불확실성과 실패를 보존합니다.
-- 제안 단계는 mutation을 수행하지 않으며, 승인 없이는 action을 통과시키지 않습니다.
-- command 실행은 policy gate를 거치고, destructive command는 거부됩니다.
+### 브라우저 데모
 
-## Run the demo
-
-루트의 `index.html`은 별도 backend 없이 동작하는 시각적 데모입니다. `src/`에는 같은 흐름을 로컬에서 실행해 보는 작은 Python 예제가 있습니다.
+별도 백엔드나 API key 없이 정적 UI를 실행합니다.
 
 ```bash
 python3 -m http.server 8080
-# http://localhost:8080
 ```
+
+그 다음 <http://localhost:8080>을 엽니다. UI에서 `PASS`, `PARTIAL`, `FAIL` 시나리오별로 검증과 승인 경계가 어떻게 달라지는지 확인할 수 있습니다.
+
+### Python reference path
+
+브라우저 UI와 별도로, 실제 로컬 subprocess를 실행하는 최소 workflow를 확인할 수 있습니다.
 
 ```bash
 python3 -m pip install -e . pytest
@@ -39,108 +51,112 @@ pytest -q
 python3 -c "from works_agent_demo.runtime import run_workflow; print(run_workflow('pass')[2].value)"
 ```
 
-위 Python workflow는 synthetic collector와 proposal을 거친 뒤 실제 로컬 subprocess를 실행해 Evidence를 만듭니다. `fail`과 `partial` 시나리오로 실패와 불완전한 검증의 차이도 확인할 수 있습니다.
+`pass`는 성공적인 명령 Evidence를, `fail`은 non-zero exit를, `partial`은 timeout을 만듭니다.
 
-데모에서는 세 가지 검증 결과를 선택할 수 있습니다.
+## 실제로 구현된 경계
 
-- `PASS` — 모든 필수 검증이 실행 Evidence로 통과
-- `PARTIAL` — 환경/의존성 제약으로 일부 검증을 완료하지 못함
-- `FAIL` — 실제 실패가 재현됨
+```mermaid
+sequenceDiagram
+    participant W as Works workflow
+    participant D as Domain model
+    participant P as Policy
+    participant R as CommandRunner
+    participant G as ApprovalGate
 
-최종 승인 버튼은 `PASS`일 때만 활성화됩니다. 실제 시스템 전체가 아니라, 핵심 흐름과 경계만 데모용으로 단순화했습니다.
+    W->>D: Case 생성
+    W->>D: Proposal 생성 (mutation=False)
+    W->>P: VerificationCheck 검증
+    P-->>R: 허용된 command만 전달
+    R->>R: subprocess.run(timeout=3s)
+    R-->>D: Evidence(PASS/FAIL/PARTIAL)
+    D->>D: FAIL > PARTIAL > PASS 집계
+    D->>G: 최종 verdict 전달
+    G-->>W: PASS일 때만 승인
+```
 
-## System flow
+| 경계 | 데모 구현 |
+|---|---|
+| Work intake / case | `Case`와 synthetic event |
+| Investigation | `SyntheticCollector`, `Investigator` |
+| Proposed action | `Proposal`, mutation 없음 |
+| Execution policy | destructive command 차단 (`rm`, `sudo`, `mkfs`, `dd`) |
+| Verification runner | 실제 로컬 `CommandRunner` 1종 |
+| Observation | exit code, stdout, stderr, timeout |
+| Verdict | `FAIL > PARTIAL > PASS`, evidence 없음은 `PARTIAL` |
+| Consequence authority | `ApprovalGate`, `PASS`만 승인 가능 |
+
+## Verdict와 fail-closed 규칙
+
+```mermaid
+stateDiagram-v2
+    [*] --> NoEvidence
+    NoEvidence --> PARTIAL: aggregate([])
+    Evidence --> PASS: 모든 check 성공
+    Evidence --> PARTIAL: timeout / 불완전한 관찰
+    Evidence --> FAIL: 실패 재현
+    PASS --> Approved: ApprovalGate.approve()
+    PARTIAL --> Review: 추가 Evidence 필요
+    FAIL --> Rework: 거부 또는 수정
+```
+
+- `PASS`: 필요한 검증이 실행되고 모두 성공함
+- `PARTIAL`: Evidence가 없거나 환경 제약으로 검증을 끝내지 못함
+- `FAIL`: 실제 명령 실패가 관찰됨
+- 여러 결과가 섞이면 `FAIL > PARTIAL > PASS` 우선순위를 적용함
+- `PASS`가 아니면 승인 경계를 통과할 수 없음
+
+## Works와 PinchQ의 책임 분리
 
 ```mermaid
 flowchart TD
-    A[Work Event] --> B[Works Agent Runtime]
-    B --> C[Collect / Investigate / Analyze]
-    C --> D[Proposed Action]
-    D --> E[PinchQ Verification Engine]
-    E --> F[Inspect]
-    F --> G[Plan]
-    G --> H[Execute deterministic runners]
-    H --> I[Evidence]
-    I --> J{Verdict}
-    J -->|PASS| K[Human Approval Gate]
-    J -->|PARTIAL| L[Human Review / Missing Evidence]
-    J -->|FAIL| M[Reject / Rework]
-    K --> N[Approved Action]
+    subgraph Works[Works Agent Runtime]
+        W1[Event / Case]
+        W2[Collect context]
+        W3[Investigate & propose]
+        W1 --> W2 --> W3
+    end
+    subgraph PinchQ[PinchQ Verification Engine]
+        Q1[Check definition]
+        Q2[Policy validation]
+        Q3[Runner execution]
+        Q4[Evidence & verdict]
+        Q1 --> Q2 --> Q3 --> Q4
+    end
+    H[Human approval]
+    W3 --> Q1 --> H
+    Q4 --> H
 ```
 
-## Responsibility boundary
-
-| Area | Owner |
-|---|---|
-| Work event intake | Works |
-| DB / log / knowledge investigation | Works |
-| LLM-assisted analysis | Works |
-| Proposed action | Works |
-| Change inspection | PinchQ |
-| Verification planning | PinchQ |
-| Command / HTTP / PTY / browser execution | PinchQ |
-| Evidence & verdict | PinchQ |
-| Human approval | Works |
-| Audit trail | Works |
-
-핵심 원칙은 **Planner와 Runner를 분리하고, LLM 판단만으로 PASS를 만들지 않는 것**입니다.
+이 저장소에서 실제 Python 경로로 확인 가능한 것은 위 경계의 최소 reference입니다. 운영 시스템에서 확장 가능한 `HTTP`, `PTY`, `Browser` runner와 planner 개념은 [verification boundary 문서](architecture/verification-boundary.md)에 설명되어 있지만, 이 공개 데모에 해당 구현이 포함되어 있다는 뜻은 아닙니다.
 
 ## Repository map
 
 ```text
 .
-├── index.html
-├── styles.css
-├── app.js
+├── index.html / app.js / styles.css       # backend 없는 시각적 walkthrough
 ├── src/works_agent_demo/
-│   ├── domain.py       # Evidence, verdict precedence, approval gate
-│   └── runtime.py       # collector, investigator, policy, command runner
-├── tests/
-│   └── test_reference_workflow.py
-├── architecture/
-│   ├── system-overview.md
-│   ├── agent-workflow.md
-│   └── verification-boundary.md
-├── decisions/
-│   ├── why-human-in-the-loop.md
-│   ├── why-evidence-based-verification.md
-│   └── why-local-first.md
-├── evidence/
-│   ├── incident-example.json
-│   ├── verification-result.json
-│   └── sample-report.md
-├── demo/
-│   └── README.md
-├── docs/
-│   └── case-study.md
-└── SANITIZATION.md
+│   ├── domain.py                           # Evidence, verdict, approval gate
+│   └── runtime.py                          # collector, proposal, policy, runner
+├── tests/test_reference_workflow.py        # 실행·우선순위·정책·승인 테스트
+├── architecture/                           # 시스템·workflow·verification 경계
+├── decisions/                              # 설계 결정 기록
+├── evidence/                               # synthetic evidence/report 예제
+├── demo/README.md                          # 데모 계약과 시나리오
+└── SANITIZATION.md                         # 공개 데이터 경계
 ```
 
-## What is intentionally not public
+## 범위와 비공개 영역
 
-- private `src/`, `internal/` implementation
-- production prompts / agent implementation
-- planner and runner internals beyond the demo contracts
-- production Docker/deployment manifests
-- actual connector/MCP configuration
-- secrets, tokens, hosts, usernames, private repository names
-- company database schema, routes, tickets, issue numbers, customer data
+포함 범위는 시스템 경계, synthetic investigation, 실제 command observation, verdict aggregation, approval rule입니다. 다음은 의도적으로 제외했습니다.
 
-## Demo scope and boundaries
+- production agent/planner 구현과 private prompt
+- 실제 DB·log·SCM connector 및 MCP 설정
+- HTTP/PTY/browser runner의 production adapter
+- 배포 토폴로지, 인증, secrets, 운영 데이터
+- 외부 시스템에 대한 mutation/write
 
-이 데모는 private 소스 전체를 공개하지 않고, 아래 흐름과 경계를 문서와 실행 코드로 보여줍니다.
+자세한 공개 데이터 원칙은 [`SANITIZATION.md`](SANITIZATION.md), 설계 설명은 [`architecture/system-overview.md`](architecture/system-overview.md), 실행 계약은 [`demo/README.md`](demo/README.md)를 참고하세요.
 
-1. 시스템 경계와 데이터 흐름
-2. Human-in-the-loop 설계 이유
-3. Evidence 기반 검증 계약
-4. `PASS / FAIL / PARTIAL` 의미
-5. synthetic incident가 조사 → 검증 → 승인으로 진행되는 과정
-6. 실제 private implementation과 공개 demo 사이의 sanitization 원칙
+## License
 
-실행 예제는 의도적으로 작습니다. 운영 수준의 분산 실행, 실제 connector, LLM 품질, 브라우저 자동화와 인증은 범위 밖이며 `SANITIZATION.md`에 데모 데이터 원칙을 기록했습니다.
-
-## Project labels
-
-GitHub 이슈는 `bug`, `enhancement`, `documentation`, `security`, `triage`, `good first issue` 라벨을 사용합니다. Issue template은 재현 절차와 데모 흐름에 미치는 영향을 함께 남기도록 구성했습니다.
-
-자세한 내용은 [`docs/case-study.md`](docs/case-study.md)와 [`architecture/system-overview.md`](architecture/system-overview.md)를 참고하세요.
+MIT. 자세한 내용은 [`LICENSE`](LICENSE)를 확인하세요.
