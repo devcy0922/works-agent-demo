@@ -43,3 +43,10 @@ python3 -m http.server 8080
 Open `http://localhost:8080`.
 
 No package installation, API key or backend is required.
+
+The executable reference path is separate from this browser-only visual demo:
+
+```bash
+python3 -m pip install -e . pytest
+pytest -q
+```

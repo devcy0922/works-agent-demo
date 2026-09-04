@@ -1,0 +1,17 @@
+name: Reference implementation idea
+description: Suggest a small, public-safe improvement to the demo.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or learning goal
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+    validations:
+      required: true
