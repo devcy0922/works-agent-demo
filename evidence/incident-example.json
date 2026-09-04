@@ -1,0 +1,41 @@
+{
+  "schema_version": "portfolio-demo-v1",
+  "synthetic": true,
+  "case": {
+    "id": "INC-DEMO-042",
+    "title": "Checkout latency spike",
+    "priority": "high",
+    "trigger": "service-alert-webhook",
+    "scope": "checkout-api"
+  },
+  "policy": {
+    "investigation_access": "read-only",
+    "mutation_requires_human_approval": true
+  },
+  "sources": [
+    {
+      "kind": "log",
+      "name": "app-logs-demo",
+      "observation": "Latency increase correlates with requests where optional currency metadata is missing."
+    },
+    {
+      "kind": "database",
+      "name": "orders-readonly",
+      "observation": "Synthetic order fixture contains a null optional currency field."
+    },
+    {
+      "kind": "repository",
+      "name": "example/checkout-service",
+      "observation": "A recent fictional diff touches checkout serialization."
+    }
+  ],
+  "finding": {
+    "confidence_label": "supported-by-synthetic-evidence",
+    "summary": "The demo correlates the failure path with a missing optional currency value."
+  },
+  "proposed_action": {
+    "type": "code-change",
+    "summary": "Add a null guard for the currency field and a focused regression test.",
+    "executed": false
+  }
+}
