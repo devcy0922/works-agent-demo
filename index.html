@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Public evidence portfolio for a human-in-the-loop AI operations system." />
+  <title>Works Agent System — Evidence Demo</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Works Agent System home">
+        <span class="brand-mark">W</span>
+        <span>
+          <strong>Works Agent System</strong>
+          <small>Public Evidence Portfolio</small>
+        </span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#demo">Demo</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#principles">Principles</a>
+        <a href="./docs/case-study.md">Case Study</a>
+      </nav>
+      <span class="privacy-chip">Synthetic data only</span>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">AI OPERATIONS · EVIDENCE FIRST · HUMAN APPROVAL</div>
+          <h1>Investigate with AI.<br />Decide with evidence.</h1>
+          <p class="hero-lead">
+            Works investigates operational work and proposes an action. PinchQ verifies the change with
+            executable checks. A human makes the final decision only after the resulting evidence is visible.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#demo">Run synthetic incident</a>
+            <a class="button secondary" href="./architecture/system-overview.md">Read architecture</a>
+          </div>
+          <div class="hero-note">
+            <strong>Portfolio boundary:</strong> the production implementations remain private. This public demo is a deterministic,
+            sanitized representation of the trust boundaries and evidence contract.
+          </div>
+        </div>
+
+        <div class="hero-system-card" aria-label="System boundary summary">
+          <div class="system-label">Private implementation</div>
+          <div class="system-module works-module">
+            <div>
+              <span class="module-kicker">WORKS</span>
+              <strong>Agent Runtime</strong>
+            </div>
+            <span>Investigate → Propose</span>
+          </div>
+          <div class="connector"><span></span><b>Proposed Action</b><span></span></div>
+          <div class="system-module pinchq-module">
+            <div>
+              <span class="module-kicker">PINCHQ</span>
+              <strong>Verification Engine</strong>
+            </div>
+            <span>Inspect → Plan → Execute</span>
+          </div>
+          <div class="connector"><span></span><b>Evidence</b><span></span></div>
+          <div class="system-module approval-module">
+            <div>
+              <span class="module-kicker">BOUNDARY</span>
+              <strong>Human Approval</strong>
+            </div>
+            <span>PASS / FAIL / PARTIAL</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="trust-strip" aria-label="Core guarantees">
+        <div><strong>No LLM-only PASS</strong><span>Verdicts require runner evidence.</span></div>
+        <div><strong>Bounded execution</strong><span>Planning and execution are separate.</span></div>
+        <div><strong>Explicit uncertainty</strong><span>Missing evidence becomes PARTIAL.</span></div>
+        <div><strong>Human final action</strong><span>Mutation stays behind approval.</span></div>
+      </section>
+
+      <section id="demo" class="section demo-section">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">INTERACTIVE DEMO</span>
+            <h2>One incident, three possible verdicts</h2>
+          </div>
+          <p>
+            Select a deterministic scenario and run it. The data is fictional; the state transitions mirror the public system contract.
+          </p>
+        </div>
+
+        <div class="scenario-toolbar" role="group" aria-label="Select verification scenario">
+          <button class="scenario-button active" data-scenario="pass">
+            <span class="status-dot pass-dot"></span>
+            PASS
+            <small>Required checks succeed</small>
+          </button>
+          <button class="scenario-button" data-scenario="partial">
+            <span class="status-dot partial-dot"></span>
+            PARTIAL
+            <small>Evidence is incomplete</small>
+          </button>
+          <button class="scenario-button" data-scenario="fail">
+            <span class="status-dot fail-dot"></span>
+            FAIL
+            <small>Regression is reproduced</small>
+          </button>
+          <button id="run-demo" class="button primary run-button">Run scenario</button>
+          <button id="reset-demo" class="button ghost">Reset</button>
+        </div>
+
+        <div class="workspace">
+          <aside class="panel case-panel">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">CASE</span>
+                <h3>Checkout latency spike</h3>
+              </div>
+              <span class="case-id">INC-DEMO-042</span>
+            </div>
+
+            <div class="synthetic-callout">Synthetic incident · no production identifiers</div>
+
+            <dl class="case-meta">
+              <div><dt>Trigger</dt><dd>Service alert webhook</dd></div>
+              <div><dt>Scope</dt><dd>checkout-api</dd></div>
+              <div><dt>Priority</dt><dd>High</dd></div>
+              <div><dt>Policy</dt><dd>Read-only investigation</dd></div>
+            </dl>
+
+            <div class="source-stack">
+              <span>Evidence sources</span>
+              <ul>
+                <li><b>LOG</b> app-logs-demo</li>
+                <li><b>DB</b> orders-readonly</li>
+                <li><b>GIT</b> example/checkout-service</li>
+              </ul>
+            </div>
+
+            <div class="proposed-action">
+              <span>Proposed action</span>
+              <strong>Add a null guard for the currency field and a focused regression test.</strong>
+              <p>No write is executed during investigation.</p>
+            </div>
+          </aside>
+
+          <section class="panel timeline-panel" aria-live="polite">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">WORKS AGENT RUNTIME</span>
+                <h3>Investigation timeline</h3>
+              </div>
+              <span id="run-state" class="run-state idle">Idle</span>
+            </div>
+
+            <div id="timeline" class="timeline">
+              <div class="empty-state">
+                <div class="empty-icon">→</div>
+                <strong>Ready to run</strong>
+                <span>Choose a scenario and start the deterministic workflow.</span>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel verification-panel">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">PINCHQ</span>
+                <h3>Verification evidence</h3>
+              </div>
+              <span id="verdict" class="verdict pending">PENDING</span>
+            </div>
+
+            <div class="verification-flow">
+              <div class="flow-node"><span>01</span><div><b>Inspect</b><small>Diff + risk signals</small></div></div>
+              <div class="flow-line"></div>
+              <div class="flow-node"><span>02</span><div><b>Plan</b><small>Typed verification plan</small></div></div>
+              <div class="flow-line"></div>
+              <div class="flow-node"><span>03</span><div><b>Run</b><small>Executable checks</small></div></div>
+            </div>
+
+            <div id="checks" class="checks-list">
+              <div class="check-row placeholder"><span>HTTP</span><b>/health</b><em>waiting</em></div>
+              <div class="check-row placeholder"><span>CMD</span><b>focused regression test</b><em>waiting</em></div>
+              <div class="check-row placeholder"><span>UI</span><b>checkout smoke flow</b><em>waiting</em></div>
+            </div>
+
+            <div class="evidence-contract">
+              <span>Evidence contract</span>
+              <code>FAIL &gt; PARTIAL &gt; PASS</code>
+              <p>A check cannot become PASS without execution evidence.</p>
+            </div>
+
+            <div class="approval-box">
+              <div class="approval-heading">
+                <span>Human approval gate</span>
+                <b id="approval-status">Waiting for verification</b>
+              </div>
+              <button id="approve-action" class="button approve" disabled>Approve proposed action</button>
+              <small id="approval-help">Approval is enabled only after a PASS verdict in this public demo.</small>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="architecture" class="section architecture-section">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">ARCHITECTURE</span>
+            <h2>Two systems, one accountability chain</h2>
+          </div>
+          <p>The components are separated so model judgment, execution authority and human responsibility are not collapsed into one agent loop.</p>
+        </div>
+
+        <div class="architecture-grid">
+          <article class="architecture-card accent-a">
+            <span>01 · WORKS</span>
+            <h3>Investigation owns context</h3>
+            <p>Normalizes work events, gathers read-only evidence, runs bounded analysis and produces a proposed action with provenance.</p>
+            <ul><li>Triggers & collectors</li><li>DB / logs / knowledge</li><li>Agent workflow</li><li>Approval lifecycle</li></ul>
+          </article>
+          <article class="architecture-card accent-b">
+            <span>02 · PINCHQ</span>
+            <h3>Verification owns proof</h3>
+            <p>Turns a proposed change into a typed verification plan, executes narrow runners and aggregates observed evidence.</p>
+            <ul><li>Analyzer</li><li>Deterministic / adaptive planner</li><li>Policy validator</li><li>Command / HTTP / PTY / browser runners</li></ul>
+          </article>
+          <article class="architecture-card accent-c">
+            <span>03 · HUMAN</span>
+            <h3>Approval owns consequence</h3>
+            <p>Execution evidence is visible before mutation. Missing evidence remains explicit instead of being converted into model confidence.</p>
+            <ul><li>PASS / FAIL / PARTIAL</li><li>Evidence review</li><li>Explicit approval</li><li>Audit trail</li></ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="principles" class="section principles-section">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">ENGINEERING DECISIONS</span>
+            <h2>Designed around failure, not just the happy path</h2>
+          </div>
+        </div>
+        <div class="principle-grid">
+          <a href="./decisions/why-human-in-the-loop.md"><b>Human-in-the-loop</b><span>Why proposed actions stop before mutation.</span></a>
+          <a href="./decisions/why-evidence-based-verification.md"><b>Evidence-based verification</b><span>Why an LLM judge cannot manufacture PASS.</span></a>
+          <a href="./decisions/why-local-first.md"><b>Local-first boundary</b><span>Why sensitive operational context stays close to the operator.</span></a>
+          <a href="./architecture/verification-boundary.md"><b>Planner / Runner split</b><span>Why planning authority is different from execution authority.</span></a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div>
+        <strong>Works Agent System</strong>
+        <span>Public architecture & evidence portfolio</span>
+      </div>
+      <p>All incident data, hostnames, repositories and identifiers in this demo are fictional.</p>
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
